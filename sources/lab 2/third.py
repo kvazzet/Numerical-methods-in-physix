@@ -1,66 +1,51 @@
-import math
+# newton_basins_z3_minus_1.py
+import numpy as np
+import matplotlib.pyplot as plt
+from matplotlib.colors import ListedColormap
 
-def f(x):
-    # 2*ln(x) + sin(ln(x)) - cos(ln(x))
-    return 2 * math.log(x) + math.sin(math.log(x)) - math.cos(math.log(x))
+# Полином и производная: f(z)=z^3-1, f'(z)=3 z^2
+def newton_step(z):
+    denom = 3.0 * z * z
+    # защитимся от деления на 0 (если z=0 в процессе)
+    denom = np.where(denom == 0, 1e-12 + 0j, denom)
+    return z - (z**3 - 1.0) / denom
 
-def df(x):
-    # Производная f(x):
-    # 2/x + cos(ln(x))/x + sin(ln(x))/x
-    ln_x = math.log(x)
-    return (2 + math.cos(ln_x) + math.sin(ln_x)) / x
+def main():
+    # Сетка: -2..2 с шагом 0.004 → 1001×1001 = 1_002_001 точка
+    x = np.linspace(-2.0, 2.0, 1001)
+    y = np.linspace(-2.0, 2.0, 1001)
+    X, Y = np.meshgrid(x, y)              # форма (1001, 1001)
+    Z = X + 1j * Y                        # стартовые точки z^(0)
 
-def bisection(f, a, b, eps=1e-6, max_iter=100):
-    n = 0
-    while (b - a) / 2 > eps and n < max_iter:
-        c = (a + b) / 2
-        if f(c) == 0:
-            return c, n+1
-        elif f(a) * f(c) < 0:
-            b = c
-        else:
-            a = c
-        n += 1
-    return (a + b) / 2, n+1
+    # Три корня z^3=1
+    roots = np.array([
+        1.0 + 0j,
+        np.exp(2j * np.pi / 3.0),
+        np.exp(-2j * np.pi / 3.0),
+    ], dtype=np.complex128)
 
-# Функция-итератор для метода простой итерации (relaxation).
-def g(x, lambda_=0.3):
-    # x_new = x - lambda_ * f(x)
-    return x - lambda_ * f(x)
+    # 30 итераций Ньютона
+    for _ in range(30):
+        Z = newton_step(Z)
 
-def simple_iteration(f, x0, eps=1e-6, max_iter=100, lambda_=0.3):
-    n = 0
-    x = x0
-    while n < max_iter:
-        x_new = g(x, lambda_)
-        if abs(x_new - x) < eps:
-            return x_new, n + 1
-        x = x_new
-        n += 1
-    return x, n
+    # К какому корню ближе после 30-й итерации
+    # labels[i,j] ∈ {0,1,2} — индекс ближайшего корня
+    dists = np.stack([np.abs(Z - r) for r in roots], axis=2)  # (H,W,3)
+    labels = np.argmin(dists, axis=2).astype(np.uint8)
 
-def newton(f, df, x0, eps=1e-6, max_iter=100):
-    n = 0
-    x = x0
-    while abs(f(x)) > eps and n < max_iter:
-        x_new = x - f(x) / df(x)
-        if abs(x_new - x) < eps:
-            return x_new, n + 1
-        x = x_new
-        n += 1
-    return x, n
+    # Палитра для 3 корней и изображение
+    cmap = ListedColormap(["#1f77b4", "#ff7f0e", "#2ca02c"])
+    plt.figure(figsize=(7, 7), dpi=120)
+    plt.imshow(labels, cmap=cmap, origin="lower",
+               extent=[x.min(), x.max(), y.min(), y.max()],
+               interpolation="nearest")
+    plt.xlabel("Re z")
+    plt.ylabel("Im z")
+    plt.title("Basins of attraction for z^3 - 1 under Newton's method")
+    plt.tight_layout()
+    plt.show()
+    # при необходимости можно сохранить картинку:
+    # plt.savefig("newton_basins_z3_minus_1.png", bbox_inches="tight", dpi=200)
 
 if __name__ == "__main__":
-    a, b = 1, 3
-    x0 = 2.0
-    eps = 1e-6
-
-    root_bis, n_bis = bisection(f, a, b, eps)
-    print(f"Бисекция: x = {root_bis:.7f}, итераций: {n_bis}")
-
-    root_iter, n_iter = simple_iteration(f, x0, eps, lambda_=0.3)
-    print(f"Простая итерация: x = {root_iter:.7f}, итераций: {n_iter}")
-
-    root_newton, n_newton = newton(f, df, x0, eps)
-    print(f"Ньютон: x = {root_newton:.7f}, итераций: {n_newton}")
-
+    main()
