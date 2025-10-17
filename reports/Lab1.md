@@ -7,7 +7,7 @@
 4. Численный эксперимент по выбору оптимального параметра ω для SOR
 
 
-- Коды реализации: см. [first part.py](../sources/lab1/first-part. py), [second part.py](../sources/lab1/second-part.py), [third-part.py](../sources/lab1/third%20part.py)
+- Коды реализации: см. [first-part.py](../sources/lab1/first-part.py), [second-part.py](../sources/lab1/second-part.py), [third-part.py](../sources/lab1/third-part.py)
 
 
 ## Ход работы и результаты численных экспериментов
