@@ -7,12 +7,12 @@
 4. Численный эксперимент по выбору оптимального параметра ω для SOR
 
 
-- Коды реализации: см. [first part.py](../sources/lab1/first%20part.py), [second part.py](../sources/lab1/second%20part.py), [third part.py](../sources/lab1/third%20part.py)
+- Коды реализации: см. [first part.py](../sources/lab1/first part. py), [second part.py](../sources/lab1/second%20part.py), [third part.py](../sources/lab1/third%20part.py)
 
 
 ## Ход работы и результаты численных экспериментов
 ### Разминка
-![Зависимость времени от n](../images/lab1/photo_5445288821135636433_x.jpg)
+
 
 
 | n    | relerror         | time (ms) |
@@ -24,15 +24,24 @@
 | 5000 | 1.03e-16         | 5.1       |
 | 10000 | 1.02e-16        | 8.1       |
 
+![Графики зависимосте времени и ошибки в зависимости от времени](../images/lab1/photo_5445288821135636433_x.jpg)
 
-![](../images/lab1/photo_5445288821135636445_x.jpg)
+*Рис. 1. Графики зависимости времени и величины ошибки от размеров системы n*
 
+
+![](../images/lab1/solutionsaving.png)
+
+*Рис. 2. График визуализации восстановления численного решения методом прогонки для фиксированного n*
+
+![](../images/lab1/errfromindex.png)
+
+*Рис. 3. График колебаний ошибки*
 
 ### Основное блюдо
-![Оптимизация omega](../images/lab1/plot4.png)
+![Оптимизация omega](../images/lab1/comparsiomofmethods.png)
 
 ### Десерт
-![Сравнение ошибок](../images/lab1/plot5.png)
+![Сравнение ошибок](../images/lab1/lastpartoflab1.png)
 
 ## Анализ и выводы
 - Проверили, что время работы растет линейно с размером системы (графики 1–3).
