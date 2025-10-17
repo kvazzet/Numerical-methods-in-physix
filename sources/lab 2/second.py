@@ -1,66 +1,72 @@
 import math
 
-def f(x):
-    # 2*ln(x) + sin(ln(x)) - cos(ln(x))
-    return 2 * math.log(x) + math.sin(math.log(x)) - math.cos(math.log(x))
+def f(h, R, rs, rw):
+    # f(h) = h**2*(3*R - h) - 4*R**3*(rs/rw)
+    return h**2 * (3*R - h) - 4*R**3 * (rs / rw)
 
-def df(x):
-    # Производная f(x):
-    # 2/x + cos(ln(x))/x + sin(ln(x))/x
-    ln_x = math.log(x)
-    return (2 + math.cos(ln_x) + math.sin(ln_x)) / x
+def df(h, R, rs, rw):
+    # Производная по h: 2h*(3R-h) + h^2*(-1)
+    return 2*h*(3*R - h) - h**2
 
-def bisection(f, a, b, eps=1e-6, max_iter=100):
+# 1. Метод бисекции
+def bisection(f, a, b, args, eps=1e-6, max_iter=100):
     n = 0
-    while (b - a) / 2 > eps and n < max_iter:
-        c = (a + b) / 2
-        if f(c) == 0:
+    while abs(b-a) > eps and n < max_iter:
+        c = (a+b)/2
+        if f(c, *args) == 0 or abs(f(c, *args)) < eps:
             return c, n+1
-        elif f(a) * f(c) < 0:
+        if f(a, *args) * f(c, *args) < 0:
             b = c
         else:
             a = c
         n += 1
-    return (a + b) / 2, n+1
+    return (a+b)/2, n+1
 
-# Функция-итератор для метода простой итерации (relaxation).
-def g(x, lambda_=0.3):
-    # x_new = x - lambda_ * f(x)
-    return x - lambda_ * f(x)
+# 2. Метод простой итерации
+def g(h, R, rs, rw, lmbd):
+    # h_new = h - лямбда*f(h)
+    return h - lmbd*f(h, R, rs, rw)
 
-def simple_iteration(f, x0, eps=1e-6, max_iter=100, lambda_=0.3):
+def simple_iteration(f, h0, args, eps=1e-6, max_iter=100, lmbd=0.01):
     n = 0
-    x = x0
+    h = h0
     while n < max_iter:
-        x_new = g(x, lambda_)
-        if abs(x_new - x) < eps:
-            return x_new, n + 1
-        x = x_new
+        h_new = g(h, *args, lmbd)
+        if abs(h_new - h) < eps:
+            return h_new, n+1
+        h = h_new
         n += 1
-    return x, n
+    return h, n
 
-def newton(f, df, x0, eps=1e-6, max_iter=100):
+# 3. Метод Ньютона
+def newton(f, df, h0, args, eps=1e-6, max_iter=100):
     n = 0
-    x = x0
-    while abs(f(x)) > eps and n < max_iter:
-        x_new = x - f(x) / df(x)
-        if abs(x_new - x) < eps:
-            return x_new, n + 1
-        x = x_new
+    h = h0
+    while abs(f(h, *args)) > eps and n < max_iter:
+        h_new = h - f(h, *args) / df(h, *args)
+        if abs(h_new - h) < eps:
+            return h_new, n+1
+        h = h_new
         n += 1
-    return x, n
+    return h, n
 
 if __name__ == "__main__":
-    a, b = 1, 3
-    x0 = 2.0
-    eps = 1e-6
+    # Пример: R=1.0, rs=0.6, rw=1.0 (шарик легче воды)
+    R = 1.0    # радиус
+    rs = 0.6   # плотность шарика
+    rw = 1.0   # плотность жидкости
 
-    root_bis, n_bis = bisection(f, a, b, eps)
-    print(f"Бисекция: x = {root_bis:.7f}, итераций: {n_bis}")
+    # Решаем уравнение на интервале h ∈ [0, 2*R] (шар плавает — погружён частично)
+    a, b = 0.0, 2*R
+    h0 = R           # начальное приближение для итераций
+    lmbd = 0.01      # параметр для устойчивой итерации
+    args = (R, rs, rw)
 
-    root_iter, n_iter = simple_iteration(f, x0, eps, lambda_=0.3)
-    print(f"Простая итерация: x = {root_iter:.7f}, итераций: {n_iter}")
+    root_bis, n_bis = bisection(f, a, b, args)
+    print(f"Бисекция: h = {root_bis:.6f}, итераций: {n_bis}")
 
-    root_newton, n_newton = newton(f, df, x0, eps)
-    print(f"Ньютон: x = {root_newton:.7f}, итераций: {n_newton}")
+    root_iter, n_iter = simple_iteration(f, h0, args, lmbd=lmbd)
+    print(f"Итерации: h = {root_iter:.6f}, итераций: {n_iter}")
 
+    root_newt, n_newt = newton(f, df, h0, args)
+    print(f"Ньютон: h = {root_newt:.6f}, итераций: {n_newt}")
