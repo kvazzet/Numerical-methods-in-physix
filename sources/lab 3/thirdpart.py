@@ -38,4 +38,3 @@ def tail_estimate(A):
     return quad(lambda x: np.exp(-x**3)*abs(np.log(x)), A, np.inf, limit=200)[0]
 Rtail = tail_estimate(A)
 print('Upper tail estimate:', Rtail)
-
